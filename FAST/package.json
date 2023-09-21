@@ -1,7 +1,0 @@
-{
-  "name": "com.pinball.fast.unitytoolkit",
-  "displayName": "FAST Pinball Toolkit",
-  "version": "0.1.0",
-  "unity": "2020.3",
-  "description": "FAST Pinball Hardware Protocal implementation for unity"
-}

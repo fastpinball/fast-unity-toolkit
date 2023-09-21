@@ -3,6 +3,6 @@ To add this package:
 1) Open up your project's Packages/manifest.json file
 
 2) Add the following line
-"com.pinball.fast.unitytoolkit": "https://github.com/fastpinball/fast-unity-toolkit.git?path=/FAST#v0.1.0"
+"com.pinball.fast.unitytoolkit": "https://github.com/fastpinball/fast-unity-toolkit.git?path=/FAST#v0.1.1"
 
 3) Save and reload unity
