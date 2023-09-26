@@ -1,0 +1,6 @@
+Make sure to install the rules file for linux Ubuntu-flaver installations. 
+
+Found here:
+FastRulesSetup-Linux/48-fast.rules
+
+Without this, your linux builds will not find FAST hardware!
