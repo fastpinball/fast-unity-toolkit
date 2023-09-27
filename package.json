@@ -1,0 +1,32 @@
+{
+  "name": "com.pinball.fast.unitytoolkit",
+  "displayName": "Unity Fast Hardware",
+  "version": "0.3.0",
+  "unity": "2020.3",
+  "description": "Fast Hardware Protocal implementation for unity",
+  
+  "keywords": [
+      "api",
+      "hardware",
+      "pinball"
+  ],
+  
+  "repository": {
+      "url": "https://github.com/fastpinball/fast-unity-toolkit.git",
+      "type": "git"
+  },
+  
+  "author": {
+      "name":"John K Manuelian",
+      "email":"",
+      "url":""
+  },
+  
+  "samples": [
+      {
+        "displayName": "FAST Neuron Example",
+        "description": "Example scripts to load, initialize, and start communicating to FAST Neuron hardware",
+        "path": "NeuronSample~"
+      }
+  ]
+}
