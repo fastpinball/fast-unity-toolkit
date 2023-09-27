@@ -11,7 +11,16 @@ I highly recomend the [UPM Git Extention](https://github.com/mob-sakai/UpmGitExt
 
 # Using the FAST Unity Toolkit
 
-Documatation TODO
+## CS Documentation
+
+TODO
+
+## Linux Deployment Setup
+
+Be sure to install the rules files for Debian/Ubuntu based linux platforms otherwise the system will not properly symlink serial port names!
+These files can be found [Here](https://github.com/fastpinball/fast-unity-toolkit/tree/main/FastRulesSetup-Linux~)
+
+
 
 # Technical details
 ## Requirements
