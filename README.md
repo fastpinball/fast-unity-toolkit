@@ -11,6 +11,8 @@ I highly recomend the [UPM Git Extention](https://github.com/mob-sakai/UpmGitExt
 
 # Using the FAST Unity Toolkit
 
+For now, please view the example scene and source.
+
 ## CS Documentation
 
 TODO
