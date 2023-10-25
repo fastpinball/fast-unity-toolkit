@@ -1,7 +1,7 @@
 {
   "name": "com.pinball.fast.unitytoolkit",
   "displayName": "Unity Fast Hardware",
-  "version": "0.3.3-pre",
+  "version": "0.3.5-pre",
   "unity": "2020.3",
   "description": "Fast Hardware Protocal implementation for unity",
   
