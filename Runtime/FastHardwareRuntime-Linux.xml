@@ -1,0 +1,549 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FastHardwareRuntime-Linux</name>
+    </assembly>
+    <members>
+        <member name="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean)">
+            <summary>
+            Required initialization for the FAST unity runtime
+            </summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsInitialized">
+            <summary>
+            A way to check to see if FAST hardware has started up
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.Shutdown">
+            <summary>
+            Closes and cleans up the FAST control system
+            </summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Reset">
+            <summary>
+            Closes then restarts FAST control system with the same settings as previous
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetMachineType">
+            <summary>
+            Gets the type of LOOP CORE currently attached
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsMachineOfType(FAST_Pinball.FAST.eNetStyle)">
+            <summary>
+            Checks to see what type of LOOP CORE is attached
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsMachine_MODERN">
+            <summary>
+            Tests Modern/Neuron board connection
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsMachine_RETRO_11">
+            <summary>
+            Tests Retro-11 board connection
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsMachine_RETRO_89">
+            <summary>
+            Tests Retro-89 board connection
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsMachine_RETRO_95">
+            <summary>
+            Tests Retro-95 board connection
+            </summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureFlipper_Single(System.Int32,System.Int32)">
+            <summary>
+            Sets up a flipper that only uses one driver. This is typically an older style flipper where the EOS is connected directly to the strong winding of the coil.
+            </summary> 
+            <param name="DriverIndex">A global zero-based index of the driver to be used</param>
+            <param name="SwitchIndex">A global zero-based index for the flipper switch</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureFlipper_Dual(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Sets up a flipper with separately controlled windings. The EOS switch will be used to prevent the strong coil from firing or holding for longer then it should.
+            </summary> 
+            <param name="DriverHardIndex">A global zero-based index of the driver used for the flipper's hard/strong winding</param>
+            <param name="DriverHoldIndex">A global zero-based index of the driver used for the hold winding</param>
+            <param name="SwitchIndex">A global zero-based index for the flipper switch</param>
+            <param name="LocalEosSwitch">A local zero-based index for the EOS switch</param>
+            <param name="InvertEOS">True if normally closed, false if normally open</param>
+            <remarks>Setting the EOS switch to -1 will effectively make it is unused. The default hard pulse is 24ms</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureAutoFireDriver(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Sets up a hardware-controlled driver. Typically things like kickers, slingshots, jet bumpers, etc.
+            </summary>   
+            <param name="DriverIndex">A global zero-based index of the driver to be used</param>
+            <param name="SwitchIndex">A global zero-based index of the switch</param>
+            <param name="PulseMs">The time, in milliseconds, for an autofire coil to remain engaged</param>
+            <param name="SleepMs">Optional, defaults to 50ms. The time, in milliseconds, for an autofire coil ignore switch triggers</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureSlingshot(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Alias to <value>ConfigureAutoFireDriver</value>
+            </summary> 
+            <remarks>This function will be removed in a future version. Please do not use it.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureDelayedDriver(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Sets up a hardware-controlled driver that has a millisecond delay before firing
+            </summary> 
+            <param name="DriverIndex">A global zero-based index of the driver to be used</param>
+            <param name="SwitchIndex">A global zero-based index of the switch</param>
+            <param name="PulseMs">The time, in milliseconds, for an autofire coil to remain engaged</param>
+            <param name="DelayMs">Optional, defaults to 64ms. The time, in milliseconds, for the ball to settle before enabling the driver</param>
+            <remarks>This is useful for trough entry kickers and auto-firing poppers/kickouts</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureSoftControlledDriver(System.Int32)">
+            <summary>
+            Sets up a driver, 100% on, which software can enable and disable at will
+            </summary> 
+            <param name="DriverIndex">A global zero-based index of the driver to be used</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigureSoftControlledHoldDriver(System.Int32,System.Int32,FAST_Pinball.FAST.eDriverPWM)">
+            <summary>
+            Sets up a driver, with a hold power, which software can enable and disable at will
+            </summary> 
+            <param name="DriverIndex">A global zero-based index of the driver to be used</param>
+            <param name="HardPulseMS">The time, in milliseconds, the driver will remain engaged</param>
+            <param name="HoldPower">The hold coil PWM strength</param>
+            <remarks>This is useful for diverters, gates, disappering/appearing posts, etc.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ClearDriverSettings(System.Int32)">
+            <summary>
+            Resets a driver's settings to default uninitialized values
+            </summary> 
+            <param name="DriverIndex">A global zero-based index of the driver to be used</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ClearFlipperSettings(System.Int32,System.Int32)">
+            <summary>
+            Resets flipper driver settings to default uninitialized values
+            </summary> 
+            <param name="DriverHardIndex">A global zero-based index of the driver used for the flipper's hard/strong winding</param>
+            <param name="DriverHoldIndex">A global zero-based index of the driver used for the hold winding</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ClearAllDriverSettings">
+            <summary>
+            Resets all driver settings to default uninitialized values
+            </summary>  
+        </member>
+        <member name="M:FAST_Pinball.FAST.EnableDriver(System.Int32)">
+            <summary>
+            Activates a driver indefinitely. Will not deactivate until another driver command is sent to this driver index.
+            </summary> 
+            <param name="DriverIndex">The global zero-based index of the driver to enable</param>
+            <remarks>TL:driver,3</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.DisableDriver(System.Int32)">
+            <summary>
+            Deactivates the driver and disables any other related command previously enacted on the driver index.
+            </summary> 
+            <param name="DriverIndex">The global zero-based index of the driver to enable</param>
+            <remarks>TL:driver,2</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.PokeDriver(System.Int32)">
+            <summary>
+            Sends a quick pulse to the driver. It will not affect other driver settings.
+            </summary> 
+            <param name="DriverIndex">The global zero-based index of the driver to enable</param>
+            <remarks>TL:driver,1</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.EnableAutoDriver(System.Int32)">
+            <summary>
+            Turns on internal FAST hardware control for the particular driver index. Typically this is for things such as timed control, jet bumpers, slingshots, etc.
+            </summary> 
+            <param name="DriverIndex">The global zero-based index of the driver to enable</param>
+            <remarks>TL:driver,0</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.PulseDriver(System.Int32,System.Int32)">
+            <summary>
+            Activates a driver for the specified Milliseconds. It will cancel any other driver control commands.
+            </summary>   
+            <remarks>This overrides any previous configuration for the driver. Please make sure you reset any extra configurations after the MS expires or the driver may not control as you expect</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.EnableFlippers(System.Int32,System.Int32)">
+            <summary>
+            Allows user flipper control
+            <value>HoldDriverIndex</value> is optional
+            </summary> 
+            <param name="StrongDriverIndex">The global zero-based index of the driver used for the flipper's hard/strong winding</param>
+            <param name="HoldDriverIndex">The global zero-based index of the driver used for the hold winding</param>
+            <remarks>This will not set flipper configurations, it is a convienience function to turn on hardware-controlled switches</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.DisableFlippers(System.Int32,System.Int32)">
+            <summary>
+            Stops user flipper control
+            <value>HoldDriverIndex</value> is optional
+            </summary> 
+            <param name="StrongDriverIndex">The global zero-based index of the driver used for the flipper's hard/strong winding</param>
+            <param name="HoldDriverIndex">The global zero-based index of the driver used for the hold winding</param>
+            <remarks>This will not clear flipper driver flags, it is a convienience function to turn off hardware-controlled switches</remarks>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:FAST_Pinball.FAST.RegisterSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)" -->
+        <member name="M:FAST_Pinball.FAST.UnregisterSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)">
+            <summary>
+            Removes a specified switch event calback from the input handler
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <param name="SwitchCallback">The calback to remove</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.UnregisterAllSwitchCallbacks">
+            <summary>
+            Removes all switch event callbacks from the input handler
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.RegisterSpoofKey(System.Int32,UnityEngine.KeyCode)">
+            <summary>
+            Associates a keyboard key with a physical switch for testing
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <param name="SpoofKey">A keycode for "spoofing" a switch press/trigger</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.UnregisterSpoofKey(System.Int32)">
+            <summary>
+            Remove the associated keyboard key from a physical switch
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.UnregisterAllSpoofKeys">
+            <summary>
+            Removes all associated keyboard keys from a physical switches
+            </summary> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsSwitchDown(System.Int32)">
+            <summary>
+            Returns state information for a switch input
+            </summary> 
+            <returns>
+            <value>true</value> if the switch is closed (A ball or thing is on the switch)
+            <value>false</value> if the switch is open (A ball or thing is not on the switch)
+            </returns> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <param name="SpoofKey">Optional. A keycode for "spoofing" a key press/trigger</param>
+            <remarks>This switch does not invert switches- Meaning, optos will be in reverse of what you expect!</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsSwitchUp(System.Int32)">
+            <summary>
+            Returns state information for a switch input
+            </summary> 
+            <returns>
+            <value>true</value> if the switch is open (A ball or thing is not on the switch)
+            <value>false</value> if the switch is closed (A ball or thing is on the switch)
+            </returns>   
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <remarks>This switch does not invert switches- Meaning, optos will be in reverse of what you expect!</remarks> 
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsSwitchDownTriggered(System.Int32)">
+            <summary>
+            Returns state trigger state for a switch input
+            </summary> 
+            <returns>
+            <value>true</value> if the switch is triggered closed this frame
+            <value>false</value> otherwise
+            </returns>
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <remarks>This switch does not invert switches- Meaning, optos will be in reverse of what you expect!</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsSwitchUpTriggered(System.Int32)">
+            <summary>
+            Returns state trigger state for a switch input
+            </summary> 
+            <returns>
+            <value>true</value> if the switch is triggered open this frame
+            <value>false</value> otherwise
+            </returns> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <remarks>This switch does not invert switches- Meaning, optos will be in reverse of what you expect!</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsSwitchTriggered(System.Int32)">
+            <summary>
+            Returns state trigger state for a switch input
+            </summary> 
+            <returns>
+            <value>true</value> if the switch is triggered closed OR open this frame
+            <value>false</value> otherwise
+            </returns> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <remarks>This switch does not invert switches- Meaning, optos will be in reverse of what you expect!</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetSwitchToHighFrequencyMode(System.Int32,System.Boolean)">
+            <summary>
+            Sets a switch's debounc time lower for fast-acting switches
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <param name="NormallyClosed">Specifies the polarity of the switch. Internally it will swap timings</param>
+            <remarks>Close debounce set to 0ms, open debounce set to 16ms</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetSwitchToDefaultProperties(System.Int32)">
+            <summary>
+            Sets a switch's debounc time lower for fast-acting switches
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <remarks>Close debounce set to 2ms, open debounce set to 20ms, normally open</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetSwitchProperties(System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Sets a switch's debounc time lower for fast-acting switches
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <param name="ClosedMS">1-255ms closed debounce time</param>
+            <param name="OpenMS">1-255ms closed debounce time</param>
+            <param name="NormallyClosed">Specifies the polarity of the switch. Internally it will swap timings</param>
+            <remarks>Close debounce set to 2ms, open debounce set to 20ms</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.TurnOffPixels(FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets all pixels for an expansion board to black
+            </summary> 
+            <param name="Dest">The expansion board to send the pixels command to</param>
+            <remarks>The default expansion destination is the NEURON internal expansion address</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetAllPixelsToColour(UnityEngine.Color,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets all pixels for an expansion board to a specified colour
+            </summary> 
+            <param name="NewColour">The colour to be set</param>
+            <param name="Dest">The expansion board to send the pixels command to</param>
+            <remarks>The default expansion destination is the NEURON internal expansion address</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetPixelColour(System.Int32,UnityEngine.Color,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets a particular pixel to the specified colour
+            </summary> 
+            <param name="Index">The local pixel index</param>
+            <param name="NewColour">The colour to be set</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <remarks>The default expansion destination is the NEURON internal expansion address. The Index is zero-based by expansion board, meaning the NEURON has 0-127 pixels, and EXPANSION has 0-511 pixels</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetPixelColours(System.Int32,UnityEngine.Color[],FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets a contiguous group of pixels to colours in a list
+            </summary> 
+            <param name="StartIndex">The local pixel index that corresponds to <value>NewColours[0]</value></param>
+            <param name="NewColours">An array of colours for pixels to be set to</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <remarks>The default expansion destination is the NEURON internal expansion address. The Index is zero-based by expansion board, meaning the NEURON has 0-127 pixels, and EXPANSION has 0-511 pixels</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Servo_SetConfig(System.Int32,System.Int32,System.Int32,System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Configures a servo at hardware level
+            </summary> 
+            <param name="ServoIndex">The global servo index</param>
+            <param name="MinUs">The servo min-position Microsecond time (typically ~700)</param>
+            <param name="MaxUs">The servo max-position Microsecond time (typically ~2500)</param>
+            <param name="CenterUs">The servo center-point Microsecond time (typically ~1500)</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Servo_SetHomeRotation(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets an internal value for what a servo's default position
+            </summary> 
+            <param name="ServoIndex">The global servo index</param>
+            <param name="RotationPercent">The servo rotation, between 0.0f to 1.0f</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Servo_GetRotation(System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Gets the expected rotation value for what a servo
+            </summary> 
+            <param name="ServoIndex">The global servo index</param>
+            <param name="RotationPercent">The servo rotation, between 0.0f to 1.0f</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <returns>
+            <value>float</value> inclusive (0.0f to 1.0f) that represents the rotation position
+            </returns>
+            <remarks>This is not the current position of the servo hardware, it is only the current expected position of the servo.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Servo_SendHome(System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sends the servo to it's currently set "home" position, or 0.0f if none is set.
+            </summary> 
+            <param name="ServoIndex">The global servo index</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Servo_RotateTo(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sends the servo to a new rotation
+            </summary> 
+            <param name="ServoIndex">The global servo index</param>
+            <param name="DestRotationPercent">The desired servo rotation, between 0.0f to 1.0f</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_Initialize(System.Int32,System.Int32,System.Single,System.Boolean,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Retrieves the limit switch index of the previously known position
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="StepsPerSecond">Number of steps the motor runs pr second. 1000 steps/sec is the default.</param>
+            <param name="RunSpeedPercent">The turn speed percentage ranged [0.0-1.0]. Default is 1.0 (100%).</param>
+            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <returns>
+            <value>bool</value> true if success, fals if failed
+            </returns>
+            <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_SetLimitSwitches(System.Int32,System.Collections.Generic.List{System.Int32},System.Boolean,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets a list of limit switches for the stepper motor to use
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="GlobalLimitSwitches">A list of global FAST switch indecies that will treated as limit switches for the motor</param>
+            <param name="CircularLimits">Set true if this motor can rotate freely, set false if the first and last limit switch are hard-stops</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>A single limit switch is allowed, it can be treated as a step-trigger. 2 Or more limit switches will denote a min, inbetween, and max limit for the motor.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_SetStepsPerSecond(System.Int32,System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets the max step speed for the stepper (converts to steps internally)
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="StepsPerSecond">Number of steps the motor runs pr second. 1000 steps/sec is the default.</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>Speeds below 0.0 and above 1.0 are ignored.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_SetSpeedPercent(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets the max step speed for the stepper (converts to steps internally)
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="SpeedPercent">The motor speed in range [0.0-1.0]. The default is 1.0 (100%)</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>Speeds below 0.0 and above 1.0 are ignored.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_EnableMotorRamping(System.Int32,System.Boolean,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Enables or disable motor power ramp functions for a motor
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="EnableRamping">True uses the current ramping parameters. False disables ramping</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>Speeds below 0.0 and above 1.0 are ignored.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_SetRampUp(System.Int32,System.Single,UnityEngine.AnimationCurve,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets the ramping curve for a stepper's power-up
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="RampDurationInSeconds">The amount of time, in seconds, it takes to go from T0 to T1 of the curve.</param>
+            <param name="RampCurve">The power curve to evaluate</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>A NULL curve function will result in immediate power change</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_SetRampDown(System.Int32,System.Single,UnityEngine.AnimationCurve,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets the ramping curve for a stepper's power-down
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="RampDurationInSeconds">The amount of time, in seconds, it takes to go from T0 to T1 of the curve.</param>
+            <param name="RampCurve">The power curve to evaluate</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>A NULL curve function will result in immediate power change</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_GetLastKnownLimitIndex(System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Retrieves the limit switch index of the previously known position
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>int</value> the limit switch the motor is currently on
+            <value>-1</value> if no limit switches have been registered
+            </returns>
+            <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_GetCurrentLimitIndex(System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Retrieves the limit switch index the motor currently is on
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>int</value> the limit switch the motor is currently on
+            <value>-1</value> if no limit switches have been registered
+            </returns>
+            <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_Rehome(System.Int32,System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets an internal value for what a servo's default position
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="HomeLocalLimitSwitch">A registed limit switch index to use as the default position</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>true</value> If the limit switch was set
+            <value>false</value> If the limit switch index is outside the bounds of the the registered list
+            </returns>
+            <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_RunToLimit(System.Int32,System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Rotate to a limit switch. If the motor is circular, then it will take the shortest distance (based on registered limit switches) to get to the desired switch. If only 2 switches are registered, it will ping-pong between both switches.
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="DestinationLocalLimitSwitch">A registed limit switch index</param>
+            <param name="Callback">A callback to be called when the motor reaches it's limit switch</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>eResult.SUCCESS</value> When at the destination limit switch index
+            <value>eResult.LIMIT_NOT_FOUND</value> If the destination limit switch index is outside the bounds of the the registered list
+            </returns>
+            <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_ToNext(System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Rotate to the next limit switch. If the motor is circular, then it will wrap around from the max limit to the min limit.
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="Callback">A callback to be called when the motor reaches it's limit switch</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>eResult.SUCCESS</value> When at the destination limit switch index
+            <value>eResult.LIMIT_NOT_FOUND</value> If no limit switches have been registered
+            <value>eResult.AT_MAX_LIMIT</value> If the motor is already at it's maximum limit and cannot wrap
+            </returns>
+            <remarks>If a single limit switch was registerd, the motor will run until that limit switch is triggered again effectively creating a device increment (for stairs or score reels)</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_ToPrev(System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Rotate to the previous limit switch. If the motor is circular, then it will wrap around from the min limit to the max limit.
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="Callback">A callback to be called when the motor reaches it's limit switch</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>eResult.SUCCESS</value> When at the destination limit switch index
+            <value>eResult.LIMIT_NOT_FOUND</value> If no limit switches have been registered
+            <value>eResult.AT_MIN_LIMIT</value> If the motor is already at it's minumum limit and cannot wrap
+            </returns>
+            <remarks>If a single limit switch was registerd, the motor will run until that limit switch is triggered again effectively creating a device decrement (for stairs or score reels)</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_RunMs(System.Int32,System.Boolean,System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Rotate for a period of time specified in milliseconds
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="RotationTimeMs">The time, in milliseconds, to continuously run the motor. Pass -1 to run until stopped.</param>
+            <param name="RotateForwards">True to rotate forwards, false rotates backwards</param>
+            <param name="Callback">A callback to be called when the motor rotation ends</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>eResult.SUCCESS</value> When at the destination limit switch index
+            </returns>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Stepper_Stop(System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Stops the stepper
+            </summary> 
+            <param name="StepperID">The global stepper index</param>
+            <param name="Callback">A callback to be called when the motor rotation ends</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <returns>
+            <value>eResult.SUCCESS</value> When at the destination limit switch index
+            </returns>
+        </member>
+    </members>
+</doc>
