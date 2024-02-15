@@ -1,13 +1,32 @@
 # Changelog
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [0.3.7] - 2022-12-18
+## [0.4.2] - 2024-2-14
+
+### Added Stepper Functions
+- Stepper_Initialize
+- Stepper_SetStepsPerSecond
+- Stepper_SetSpeedPercent
+- Stepper_EnableMotorRamping
+- Stepper_RunMs
+- Stepper_Stop
+
+*NOTE* Run-timing callbacks are not used fully
+
+### Fixed
+- ConfigureAutoFireDriver(..) PulesMS is now used properly
+
+### Adjusted
+- Expantion module core refactor
+
+
+## [0.3.7] - 2023-12-18
 
 ### Adjusted
 - ConfigureFlipper_Dual(..) now allows you to specify the strong coil pulse MS
 
 
-## [0.3.6] - 2022-10-26
+## [0.3.6] - 2023-10-26
 
 ### Added Servo Functions
 - Servo_SetConfig
@@ -17,7 +36,7 @@ All notable changes to this package will be documented in this file. The format 
 - Servo_GetRotation
 
 
-## [0.3.5] - 2022-10-25
+## [0.3.5] - 2023-10-25
 
 ### Adjusted
 - ConfigureFlipper_Dual(..) now allows you to specify a normally open or normally closed EOS switch
@@ -25,7 +44,7 @@ All notable changes to this package will be documented in this file. The format 
 ### Fixed
 - ConfigureFlipper_Dual(..) config and EOS now works as expected
 
-## [0.3.3] - 2022-10-14
+## [0.3.3] - 2023-10-14
 
 ### Added
 - Switch config commands
@@ -33,12 +52,12 @@ All notable changes to this package will be documented in this file. The format 
 ### Adjusted
 - ConfigureFlipper_Dual(..) configs
 
-## [0.3.2] - 2022-10-5
+## [0.3.2] - 2023-10-5
 
 ### Fixed
 - Assembly naming issues with DLLs
 
-## [0.3.1] - 2022-10-4
+## [0.3.1] - 2023-10-4
 
 ### Changed
 - A prefab is no longer needed. The call to FAST_Pinball.FAST.Startup(...) will automatically create a game object and initialize it
@@ -50,7 +69,7 @@ All notable changes to this package will be documented in this file. The format 
 ### Added
 - GI commands
 
-## [0.3.0] - 2022-09-26
+## [0.3.0] - 2023-09-26
 *First real release*
 
 ### Fixed
