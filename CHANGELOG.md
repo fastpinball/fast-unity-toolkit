@@ -8,7 +8,7 @@ All notable changes to this package will be documented in this file. The format 
 - Stepper_RunMs(..) millisecond time queue while motor is running
 
 ### Adjusted
-- Expantion module core refactor
+- Expansion module core refactor
 
 
 ## [0.4.3] - 2024-2-15
@@ -34,7 +34,7 @@ All notable changes to this package will be documented in this file. The format 
 - ConfigureAutoFireDriver(..) PulesMS is now used properly
 
 ### Adjusted
-- Expantion module core refactor
+- Expansion module core refactor
 
 
 ## [0.3.7] - 2023-12-18
