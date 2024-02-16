@@ -4,7 +4,7 @@ All notable changes to this package will be documented in this file. The format 
 ## [0.4.4] - 2024-2-16
 
 ### Fixed
-- Stepper_Initialize(..) expanstion index
+- Stepper_Initialize(..) expansion index calculation
 - Stepper_RunMs(..) millisecond time queue while motor is running
 
 ### Adjusted
