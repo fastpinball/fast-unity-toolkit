@@ -335,7 +335,7 @@
             <param name="MinUs">The servo min-position Microsecond time (typically ~700)</param>
             <param name="MaxUs">The servo max-position Microsecond time (typically ~2500)</param>
             <param name="CenterUs">The servo center-point Microsecond time (typically ~1500)</param>
-            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <param name="Dest">The local expansion board base to send the servo command to</param>
         </member>
         <member name="M:FAST_Pinball.FAST.Servo_SetHomeRotation(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
@@ -343,7 +343,7 @@
             </summary> 
             <param name="ServoIndex">The global servo index</param>
             <param name="RotationPercent">The servo rotation, between 0.0f to 1.0f</param>
-            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <param name="Dest">The local expansion board base to send the servo command to</param>
         </member>
         <member name="M:FAST_Pinball.FAST.Servo_GetRotation(System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
@@ -351,7 +351,7 @@
             </summary> 
             <param name="ServoIndex">The global servo index</param>
             <param name="RotationPercent">The servo rotation, between 0.0f to 1.0f</param>
-            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <param name="Dest">The local expansion board base to send the servo command to</param>
             <returns>
             <value>float</value> inclusive (0.0f to 1.0f) that represents the rotation position
             </returns>
@@ -362,7 +362,7 @@
             Sends the servo to it's currently set "home" position, or 0.0f if none is set.
             </summary> 
             <param name="ServoIndex">The global servo index</param>
-            <param name="Dest">The local expansion board base to send the pixel command to</param>
+            <param name="Dest">The local expansion board base to send the servo command to</param>
         </member>
         <member name="M:FAST_Pinball.FAST.Servo_RotateTo(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>

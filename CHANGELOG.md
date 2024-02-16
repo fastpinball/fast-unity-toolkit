@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [0.4.4] - 2024-2-16
+
+### Fixed
+- Stepper_Initialize(..) expanstion index
+- Stepper_RunMs(..) millisecond time queue while motor is running
+
+### Adjusted
+- Expantion module core refactor
+
+
 ## [0.4.3] - 2024-2-15
 
 ### Added
