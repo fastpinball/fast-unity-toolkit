@@ -106,6 +106,8 @@ public class FPT_RuntimeTest: MonoBehaviour
        HardwareText.text = "Found Hardware <color=yellow>WPC 95</color>";
      else if (FAST_Pinball.FAST.IsMachine_MODERN())
        HardwareText.text = "Found Hardware <color=yellow>NEURON</color>";
+     else if (FAST_Pinball.FAST.IsMachine_STUB())
+       HardwareText.text = "Found Hardware <color=orange>STUB</color>";
      else 
        HardwareText.text = "Unknown Hardware";
      
@@ -128,19 +130,23 @@ public class FPT_RuntimeTest: MonoBehaviour
  
  void EchoDebugMessage(string logString, string stackTrace, LogType type)
  {
-  ConsoleLines.Enqueue(logString);
-  if (ConsoleLines.Count > 28)
-    ConsoleLines.Dequeue();
-    
-  Queue<string> NewQueue = new Queue<string>();
-  ConsoleText.text = "";
-  for (; ConsoleLines.Count>0;)
+  try 
     {
-     if (ConsoleText != null)
-       ConsoleText.text += ConsoleLines.Peek() + "\n";
-     NewQueue.Enqueue(ConsoleLines.Dequeue());
+     ConsoleLines.Enqueue(logString);
+     if (ConsoleLines.Count > 28)
+       ConsoleLines.Dequeue();
+    
+     Queue<string> NewQueue = new Queue<string>();
+     ConsoleText.text = "";
+     for (; ConsoleLines.Count>0;)
+       {
+        if (ConsoleText != null)
+          ConsoleText.text += ConsoleLines.Peek() + "\n";
+        NewQueue.Enqueue(ConsoleLines.Dequeue());
+       }
+     ConsoleLines = NewQueue;
     }
-  ConsoleLines = NewQueue;
+  catch (System.Exception) {; }
  }
  
  

@@ -1,6 +1,21 @@
 # Changelog
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [0.4.5] - 2024-2-25
+
+### Added
+
+- Servo callbacks
+- Servo_SetEstimatedTravelTime(..) for approximate position querrying and callback responses
+- STUB loop/net core for proper spoof switch & solenoid timings
+
+### Fixed
+
+- Stepper_Initialize(..) no longer incorrectly returns false on success
+- Spoof switches when no hardware is detected
+- Cleaner serial thread disposing
+
+
 ## [0.4.4] - 2024-2-16
 
 ### Fixed

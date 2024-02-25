@@ -34,6 +34,11 @@
             Checks to see what type of LOOP CORE is attached
             </summary> 
         </member>
+        <member name="M:FAST_Pinball.FAST.IsMachine_STUB">
+            <summary>
+            Returns true if no hardware is found and the system is currently running as a "stub" system
+            </summary> 
+        </member>
         <member name="M:FAST_Pinball.FAST.IsMachine_MODERN">
             <summary>
             Tests Modern/Neuron board connection
@@ -337,6 +342,15 @@
             <param name="CenterUs">The servo center-point Microsecond time (typically ~1500)</param>
             <param name="Dest">The local expansion board base to send the servo command to</param>
         </member>
+        <member name="M:FAST_Pinball.FAST.Servo_SetEstimatedTravelTime(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Sets an internal estimated time (in seconds) that the servo takes to rotate from 0% to 100%
+            </summary> 
+            <param name="ServoIndex">The global servo index</param>
+            <param name="EstimatedTimeInSeconds">The estimated amount of time, in seconds, that it takes the servo to travel from the min-position [0.0] to the max-position [1.0]</param>
+            <param name="Dest">The local expansion board base to send the servo command to</param>
+            <remarks>This is used with servo callback and position estimation. The default is 0.4s</remarks>
+        </member>
         <member name="M:FAST_Pinball.FAST.Servo_SetHomeRotation(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Sets an internal value for what a servo's default position
@@ -357,14 +371,14 @@
             </returns>
             <remarks>This is not the current position of the servo hardware, it is only the current expected position of the servo.</remarks>
         </member>
-        <member name="M:FAST_Pinball.FAST.Servo_SendHome(System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Servo_SendHome(System.Int32,FAST_Pinball.FAST.ServoResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Sends the servo to it's currently set "home" position, or 0.0f if none is set.
             </summary> 
             <param name="ServoIndex">The global servo index</param>
             <param name="Dest">The local expansion board base to send the servo command to</param>
         </member>
-        <member name="M:FAST_Pinball.FAST.Servo_RotateTo(System.Int32,System.Single,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Servo_RotateTo(System.Int32,System.Single,FAST_Pinball.FAST.ServoResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Sends the servo to a new rotation
             </summary> 
