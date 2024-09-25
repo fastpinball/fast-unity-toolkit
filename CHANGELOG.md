@@ -1,12 +1,23 @@
 # Changelog
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [0.4.6] - 2024-9-23
+
+### Added
+
+- Neuron now supports 120 switches
+
+### FIXED
+
+- Neuron Switch out of range exceptions
+
+
 ## [0.4.5] - 2024-2-25
 
 ### Added
 
 - Servo callbacks
-- Servo_SetEstimatedTravelTime(..) for approximate position querrying and callback responses
+- Servo_SetEstimatedTravelTime(..) for approximate position querying and callback responses
 - STUB loop/net core for proper spoof switch & solenoid timings
 
 ### Fixed

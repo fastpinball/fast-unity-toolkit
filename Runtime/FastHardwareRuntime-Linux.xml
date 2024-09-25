@@ -188,7 +188,15 @@
             <remarks>This will not clear flipper driver flags, it is a convienience function to turn off hardware-controlled switches</remarks>
         </member>
         <!-- Badly formed XML comment ignored for member "M:FAST_Pinball.FAST.RegisterSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)" -->
+        <!-- Badly formed XML comment ignored for member "M:FAST_Pinball.FAST.RegisterSystemSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)" -->
         <member name="M:FAST_Pinball.FAST.UnregisterSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)">
+            <summary>
+            Removes a specified switch event calback from the input handler
+            </summary> 
+            <param name="SwitchIndex">The global zero-based index to test</param>
+            <param name="SwitchCallback">The calback to remove</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.UnregisterSystemSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)">
             <summary>
             Removes a specified switch event calback from the input handler
             </summary> 
@@ -480,7 +488,7 @@
             </returns>
             <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
         </member>
-        <member name="M:FAST_Pinball.FAST.Stepper_Rehome(System.Int32,System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Stepper_Rehome(System.Int32,System.Int32,FAST_Pinball.FAST.StepperResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Sets an internal value for what a servo's default position
             </summary> 
@@ -493,7 +501,7 @@
             </returns>
             <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
         </member>
-        <member name="M:FAST_Pinball.FAST.Stepper_RunToLimit(System.Int32,System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Stepper_RunToLimit(System.Int32,System.Int32,FAST_Pinball.FAST.StepperResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Rotate to a limit switch. If the motor is circular, then it will take the shortest distance (based on registered limit switches) to get to the desired switch. If only 2 switches are registered, it will ping-pong between both switches.
             </summary> 
@@ -507,7 +515,7 @@
             </returns>
             <remarks>The limit switch index is local-zero based to the registered list. IE: 0 is limit switch 0, not FAST switch 0.</remarks>
         </member>
-        <member name="M:FAST_Pinball.FAST.Stepper_ToNext(System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Stepper_ToNext(System.Int32,FAST_Pinball.FAST.StepperResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Rotate to the next limit switch. If the motor is circular, then it will wrap around from the max limit to the min limit.
             </summary> 
@@ -521,7 +529,7 @@
             </returns>
             <remarks>If a single limit switch was registerd, the motor will run until that limit switch is triggered again effectively creating a device increment (for stairs or score reels)</remarks>
         </member>
-        <member name="M:FAST_Pinball.FAST.Stepper_ToPrev(System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Stepper_ToPrev(System.Int32,FAST_Pinball.FAST.StepperResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Rotate to the previous limit switch. If the motor is circular, then it will wrap around from the min limit to the max limit.
             </summary> 
@@ -535,7 +543,7 @@
             </returns>
             <remarks>If a single limit switch was registerd, the motor will run until that limit switch is triggered again effectively creating a device decrement (for stairs or score reels)</remarks>
         </member>
-        <member name="M:FAST_Pinball.FAST.Stepper_RunMs(System.Int32,System.Boolean,System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Stepper_RunMs(System.Int32,System.Boolean,System.Int32,FAST_Pinball.FAST.StepperResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Rotate for a period of time specified in milliseconds
             </summary> 
@@ -548,7 +556,7 @@
             <value>eResult.SUCCESS</value> When at the destination limit switch index
             </returns>
         </member>
-        <member name="M:FAST_Pinball.FAST.Stepper_Stop(System.Int32,FAST_Pinball.FAST.BasicResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
+        <member name="M:FAST_Pinball.FAST.Stepper_Stop(System.Int32,FAST_Pinball.FAST.StepperResultCallback,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Stops the stepper
             </summary> 
