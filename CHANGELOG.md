@@ -5,6 +5,13 @@ All notable changes to this package will be documented in this file. The format 
 
 ### Added
 
+-  void ConfigureFlipper_SingleEx for more finite control of single-driver flippers
+
+
+## [0.4.6] - 2024-9-23
+
+### Added
+
 - Neuron now supports 120 switches
 
 ### FIXED
