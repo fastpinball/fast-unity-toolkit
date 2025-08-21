@@ -1,7 +1,15 @@
 # Changelog
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [0.4.6] - 2024-9-23
+
+## [0.4.8] - 2025-8-20
+
+### Adjusted
+
+-  void ConfigureFlipper_DualEx now has a hold PWM (or defaults to 100%)
+
+
+## [0.4.7] - 2024-9-23
 
 ### Added
 

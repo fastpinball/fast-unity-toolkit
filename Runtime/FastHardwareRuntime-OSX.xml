@@ -75,7 +75,7 @@
             <param name="PulseMS">Hard pulse time in MS</param>
             <param name="HoldPower">PWM percent for hold</param>
         </member>
-        <member name="M:FAST_Pinball.FAST.ConfigureFlipper_Dual(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean)">
+        <member name="M:FAST_Pinball.FAST.ConfigureFlipper_Dual(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,FAST_Pinball.FAST.eDriverPWM)">
             <summary>
             Sets up a flipper with separately controlled windings. The EOS switch will be used to prevent the strong coil from firing or holding for longer then it should.
             </summary> 
