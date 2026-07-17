@@ -2,6 +2,17 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.4.9] - 2026-7-17
+
+### Added
+
+-  void PulseDriver(..) overload with shaped two-stage output (pwm1 time/power, pwm2 time/power, rest time) for fine sub-millisecond effective flip power
+
+### Fixed
+
+-  PulseDriver(..) now rejects out-of-range pulse times (> 255ms) instead of emitting a malformed DL: command
+
+
 ## [0.4.8] - 2025-8-20
 
 ### Adjusted

@@ -178,6 +178,18 @@
             </summary>   
             <remarks>This overrides any previous configuration for the driver. Please make sure you reset any extra configurations after the MS expires or the driver may not control as you expect</remarks>
         </member>
+        <member name="M:FAST_Pinball.FAST.PulseDriver(System.Int32,System.Int32,FAST_Pinball.FAST.eDriverPWM,System.Int32,FAST_Pinball.FAST.eDriverPWM,System.Int32)">
+            <summary>
+            Activates a driver as one shaped pulse: PWM1 drives for its time, then PWM2 drives for its time, back to back. Trimming the second stage lands the shot between two whole-millisecond powers. It will cancel any other driver control commands.
+            </summary>
+            <param name="DriverIndex">The global zero-based index of the driver to pulse</param>
+            <param name="Pwm1TimeMs">Time of the first stage in milliseconds (0-255)</param>
+            <param name="Pwm1Power">Duty-cycle bit pattern the first stage drives at</param>
+            <param name="Pwm2TimeMs">Time of the second stage in milliseconds (0-255); zero drops the stage</param>
+            <param name="Pwm2Power">Duty-cycle bit pattern the second stage drives at</param>
+            <param name="RestTimeMs">Cooldown holding the driver off after the pulse, in milliseconds (0-255)</param>
+            <remarks>DL:driver,89,00,10,pwm1_ms,pwm1_power,pwm2_ms,pwm2_power,rest_ms -- This overrides any previous configuration for the driver. Please make sure you reset any extra configurations after the MS expires or the driver may not control as you expect</remarks>
+        </member>
         <member name="M:FAST_Pinball.FAST.EnableFlippers(System.Int32,System.Int32)">
             <summary>
             Allows user flipper control
