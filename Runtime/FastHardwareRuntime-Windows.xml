@@ -8,6 +8,12 @@
             <summary>
             Required initialization for the FAST unity runtime
             </summary>
+            <returns>
+            <see cref="F:FAST_Pinball.FAST.eResult.INITIALIZATION_STARTED"/> if async startup began (await your callback for
+            the hardware outcome), <see cref="F:FAST_Pinball.FAST.eResult.INSTANCE_ALREADY_EXISTS"/> if a started instance
+            already exists (the callback is fired with SUCCESS), or
+            <see cref="F:FAST_Pinball.FAST.eResult.NODE_NOT_READY"/> (Godot) if called before a FAST node is in the tree.
+            </returns>
         </member>
         <member name="M:FAST_Pinball.FAST.IsInitialized">
             <summary>

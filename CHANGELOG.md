@@ -2,6 +2,18 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.4.10] - 2026-8-2
+
+### Fixed
+
+-  FAST.Shutdown() implemented (was a TODO no-op): stops all core reader threads, then closes serial ports — fixes memory ballooning after exiting play mode and the stalled "reloading domain" in the editor (F10)
+-  OnDestroy now routes through Shutdown() so play-stop performs the full teardown (previously closed ports without stopping threads)
+-  Core reader threads no longer spin at full speed on a dead/idle port (2ms sleep on no-data); empty message segments are skipped without sleeping so bursts drain at full rate
+-  Reader response backlog capped at 10,000 entries (oldest dropped) so an undrained queue can no longer grow without bound
+-  FastSerialCommunicator.ReadDataAsString returns null for no-data (timeout/error/no port) vs a string for a received message; send/shutdown paths guarded so a mid-session port loss degrades silently instead of throwing every frame
+-  Core.Update no longer allocates two queues per core per frame (reused drain queue); LoopCore watchdog message built once instead of per frame
+
+
 ## [0.4.9] - 2026-7-17
 
 ### Added
