@@ -2,16 +2,27 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## [0.4.10] - 2026-8-2
+## [0.5.0] - 2026-9-18
 
-### Fixed
+### Changed
 
--  FAST.Shutdown() implemented (was a TODO no-op): stops all core reader threads, then closes serial ports — fixes memory ballooning after exiting play mode and the stalled "reloading domain" in the editor (F10)
--  OnDestroy now routes through Shutdown() so play-stop performs the full teardown (previously closed ports without stopping threads)
--  Core reader threads no longer spin at full speed on a dead/idle port (2ms sleep on no-data); empty message segments are skipped without sleeping so bursts drain at full rate
--  Reader response backlog capped at 10,000 entries (oldest dropped) so an undrained queue can no longer grow without bound
--  FastSerialCommunicator.ReadDataAsString returns null for no-data (timeout/error/no port) vs a string for a received message; send/shutdown paths guarded so a mid-session port loss degrades silently instead of throwing every frame
--  Core.Update no longer allocates two queues per core per frame (reused drain queue); LoopCore watchdog message built once instead of per frame
+-  All outgoing serial writes (pixels, solenoids, switches, servos, steppers -- everything
+   that funnels through `FastSerialCommunicator._FastHardwareSend`) are now handed off to a
+   dedicated background writer thread per physical port instead of blocking the calling
+   thread with a direct `SerialPort.Write(...)`. Previously, sending a large burst of
+   changes in one frame (e.g. many pixels changing at once) could stall the main/game
+   thread for several milliseconds while the OS serial buffer drained.
+-  Outgoing write buffers are now pooled per-port instead of allocated fresh on every send,
+   removing steady-state per-frame GC allocation on the write path. Pools are strictly
+   per-port (never shared across devices/cores), and every queued payload carries its own
+   explicit length alongside its buffer so a pooled buffer's stale trailing bytes from a
+   previous, larger send can never be read or transmitted.
+
+### Added
+
+-  `SerialPort.WriteTimeout` (250ms) is now set when a port is opened, bounding how long
+   the background writer thread's `Write()` can block if a port stalls or is unplugged,
+   so a dead port can no longer hang that thread indefinitely.
 
 
 ## [0.4.9] - 2026-7-17
