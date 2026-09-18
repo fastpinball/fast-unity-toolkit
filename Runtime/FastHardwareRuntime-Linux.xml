@@ -594,5 +594,15 @@
             <value>eResult.SUCCESS</value> When at the destination limit switch index
             </returns>
         </member>
+        <member name="M:FAST_Pinball.FastSerialCommunicator.SetPortWriteCapacity(System.Int32,System.Int32)">
+            <summary>Sets the per-port write-queue capacity once a port's device type is known.</summary>
+            <remarks>
+            Call this from FAST.StartupProcess right after classifying a port (FastExpansionCore
+            vs FastIoLoopCore/FastDisplay*Core/etc), passing PIXEL_WRITE_QUEUE_CAPACITY for the
+            pixel/lighting Expansion bus and COMMAND_WRITE_QUEUE_CAPACITY for everything else.
+            Safe to call at any time (just changes an int the next enqueue reads), including
+            before any real traffic has flowed, which is the intended timing.
+            </remarks>
+        </member>
     </members>
 </doc>

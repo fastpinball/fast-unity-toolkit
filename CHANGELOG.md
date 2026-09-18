@@ -2,6 +2,45 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.5.2] - 2026-9-21
+
+### Fixed
+
+-  0.5.1's evict-oldest write queue used one capacity (16) for every port, including the
+   I/O Loop port carrying switch/solenoid traffic. That traffic is discrete, must-deliver
+   commands (a pulse, a startup/shutdown/watchdog configuration sweep), not coalescable
+   state -- a legitimate burst of a few dozen such commands could have overflowed a
+   16-deep queue and silently evicted a real command, which would have been a worse
+   regression than the one 0.5.1 fixed.
+-  Per-port write-queue capacity is now set per device type once `FAST.StartupProcess`'s
+   "ID:" handshake classifies the port: `PIXEL_WRITE_QUEUE_CAPACITY` (16) for the pixel/
+   lighting Expansion bus, where staleness is safe to discard, and the new
+   `COMMAND_WRITE_QUEUE_CAPACITY` (512) for switches/solenoids/servos/steppers/displays,
+   where every message must eventually be delivered. `FastSerialCommunicator.
+   SetPortWriteCapacity(FastDevIndex, Capacity)` is the new entry point that applies this
+   (public, in case a project needs to tune it further for its own device mix).
+
+
+## [0.5.1] - 2026-9-21
+
+### Fixed
+
+-  The per-port write queue introduced in 0.5.0 rejected new sends once full (dropping the
+   NEWEST payload) and only evicted a `WRITE_QUEUE_CAPACITY` of 128 stale entries slowly,
+   so a burst of full-state updates (e.g. a lightshow driving many pixels every frame)
+   could starve out the most recent state for a noticeable number of frames, and its
+   backlog of already-superseded frames could delay -- or under sustained load, cause a
+   dropped -- final "reset to default" update after the burst ended, leaving some lamps
+   visibly stuck mid-show.
+-  `_FastHardwareSend` now evicts the OLDEST queued payload to make room for a new one
+   instead of rejecting the new one, via `EnqueueWithEviction`. Since sends represent the
+   current full state of a target (not independent one-off events), the newest payload
+   should always win under backpressure rather than being starved behind stale history.
+-  `WRITE_QUEUE_CAPACITY` reduced from 128 to 16 per port, tightening the worst-case
+   display lag bound under sustained bandwidth overload from ~2.3s to a small fraction of
+   a second.
+
+
 ## [0.5.0] - 2026-9-18
 
 ### Changed
