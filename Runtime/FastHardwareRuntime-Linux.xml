@@ -367,6 +367,76 @@
             <param name="Dest">The local expansion board base to send the pixel command to</param>
             <remarks>The default expansion destination is the NEURON internal expansion address. The Index is zero-based by expansion board, meaning the NEURON has 0-127 pixels, and EXPANSION has 0-511 pixels</remarks>
         </member>
+        <member name="M:FAST_Pinball.FAST.SetPixelPaletteMode(System.Boolean)">
+            <summary>
+            Enables or disables palette (indexed-colour) mode for all pixel sends
+            </summary>
+            <param name="Enabled">
+            When true, every SetPixelColour/SetPixelColours call is converted to a palette
+            index (via the table programmed with SetPaletteEntry) before being sent, using the
+            RC: wire command (2 bytes/pixel: index + palette entry) instead of RD: (4 bytes/
+            pixel: index + R,G,B). When false (the default), the existing full-RGB path is used
+            unchanged -- fine for most games, and requires no palette setup at all.
+            </param>
+            <remarks>
+            This is one global switch, not per-board: it assumes a single palette is programmed
+            identically everywhere via SetPaletteEntry. Colours passed to SetPixelColour/
+            SetPixelColours are matched to the nearest programmed entry (see PixelPalette.GetIndex)
+            -- they don't need to exactly match a table entry.
+            </remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetPaletteEntry(System.Int32,UnityEngine.Color,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Programs one entry (0-255) of the shared 256-colour palette table
+            </summary>
+            <param name="Index">Palette entry to program, 0-255</param>
+            <param name="NewColour">The colour for this entry</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>
+            Updates the local lookup table used by SetPixelColour/SetPixelColours when palette
+            mode is enabled (see SetPixelPaletteMode), AND sends the colour-table command (RT: or
+            RU:, depending on the target board's firmware) to program the same entry into the
+            actual hardware's colour table on Dest. Call this for every entry you intend to use
+            BEFORE enabling palette mode -- colours sent while palette mode is on that were never
+            programmed here have no index to map to.
+            </remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetPaletteEntries(System.Int32[],UnityEngine.Color[],FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Programs several palette entries in one call.
+            </summary>
+            <param name="Indices">Palette entries to program, 0-255 each</param>
+            <param name="NewColours">The colour for each entry. If this and Indices differ in length, extras in the longer array are ignored</param>
+            <param name="Dest">The local expansion board base to send the command to</param>
+            <remarks>
+            Same effect as calling SetPaletteEntry once per entry, but on a board whose firmware
+            is newer than 0.48 this batches all entries into as few RU: messages as possible
+            instead of sending one command per entry -- on 0.48 and earlier, where batching does
+            not work in firmware, it falls back to one RT: message per entry automatically.
+            </remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.ConfigurePixelPortLength(System.Int32,System.Int32,System.Int32,System.Int32,FAST_Pinball.FAST.eLedType,FAST_Pinball.FAST.eExpansionDestinations)">
+            <summary>
+            Reassigns how many of a pixel bank's 128 LED indices are driven by one physical LED
+            output port, and where in the bank that run starts. Boards default to a fixed even
+            split (e.g. 4 ports of 32); this overrides that split for one port.
+            </summary>
+            <param name="BankIndex">
+            Which 128-pixel bank to configure, 0-based across every bank registered for Dest, in
+            the same order boards were listed in ExpansionOrder at startup (a board with two
+            banks, e.g. FP-EXP-0081, counts as two consecutive indices).
+            </param>
+            <param name="Port">Physical LED output port on this bank's own EXP address, 0-F -- each bank is addressed separately, so this is NOT a global port number across a multi-bank board.</param>
+            <param name="StartIndex">First pixel index (0-127) in the bank allocated to Port.</param>
+            <param name="Count">Number of pixels allocated to Port.</param>
+            <param name="Type">LED protocol Port is wired for.</param>
+            <param name="Dest">The local expansion board base to send the ER: command to.</param>
+            <remarks>
+            Sends the ER: command directly to hardware; there is no local state to mirror since
+            this only changes how a bank's existing pixel indices are routed to output headers,
+            not the pixel data itself.
+            </remarks>
+        </member>
         <member name="M:FAST_Pinball.FAST.Servo_SetConfig(System.Int32,System.Int32,System.Int32,System.Int32,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
             Configures a servo at hardware level
@@ -593,6 +663,27 @@
             <returns>
             <value>eResult.SUCCESS</value> When at the destination limit switch index
             </returns>
+        </member>
+        <member name="M:FAST_Pinball.FAST.StandardPixelPalette.Setup(FAST_Pinball.FAST.eExpansionDestinations,System.Boolean)">
+            <summary>
+            Programs all ROWS*COLS entries of the standard palette into the hardware (via
+            FAST.SetPaletteEntry) and switches FAST.SetPixelPaletteMode(true) on.
+            </summary>
+            <param name="Dest">Destination board(s) to program.</param>
+            <param name="UseFastMath">
+            True (default): installs this class's GetIndex (the analytical row/shade search) as
+            PixelPalette.IndexConverter. False: leaves IndexConverter unset, so
+            PixelPalette.GetIndex falls back to the generic O(256) nearest-colour linear scan
+            across the same uploaded table.
+            </param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.StandardPixelPalette.GetIndex(UnityEngine.Color)">
+            <summary>
+            Converts an arbitrary colour to its nearest standard-palette index: a single
+            saturation check picks Grey, otherwise the hue angle is computed directly from RGB
+            and mapped to a row in O(1) (see GetHueAngle/GetHueRow), then the shade column is
+            derived directly from brightness. No table scan of any kind.
+            </summary>
         </member>
         <member name="M:FAST_Pinball.FastSerialCommunicator.SetPortWriteCapacity(System.Int32,System.Int32)">
             <summary>Sets the per-port write-queue capacity once a port's device type is known.</summary>
