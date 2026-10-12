@@ -2,6 +2,35 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.6.3] - 2026-10-12
+
+### Added
+
+-  Startup now checks the attached hardware against the declared board lists. NodeOrder is
+   compared position by position with the NET's own node report (`CN:`, Modern/Neuron
+   platform only -- Retro controllers have no I/O chain), and every board in ExpansionOrder
+   is asked to identify itself at its own EXP address (`ID@<addr>:`). Differences are always
+   logged (player builds too, via `LogInfo`) and returned by the new
+   `FAST.GetHardwareMismatches()` as `HardwareMismatch` entries (code, position in the
+   declared list, description). Expansion boards attached but not declared are not
+   detected. The NEURON entry only checks that something answers at address 48, which
+   only the Neuron has. Its product ID isn't checked.
+-  `FAST.Startup(..., bool FailureOnBadHardware = false)`. When true, any mismatch fails
+   startup: all FAST ports are closed (the NET watchdog then turns every driver off), the
+   runtime runs in stub mode, and the callback gets the first mismatch's code. When false
+   (the default), startup carries on as before and the callback gets `SUCCESS`. Godot's
+   `GdStartup` takes the same optional argument.
+-  New `eResult` configuration-error codes, all carrying the `FAST_CONFIG_ERROR` bit
+   (0x1000) so `(Result & eResult.FAST_CONFIG_ERROR) != 0` tests the whole group:
+   `NODE_REPORT_MISSING`, `NODE_BOARD_MISSING`, `NODE_BOARD_UNEXPECTED`,
+   `NODE_BOARD_MISMATCH`, `EXPANSION_BUS_MISSING`, `EXPANSION_BOARD_MISSING`,
+   `EXPANSION_BOARD_MISMATCH`, `EXPANSION_BOARD_LIMIT` (0x1001-0x1008). Existing codes keep
+   their values.
+-  Every `eResult` code and `HardwareMismatch` now has an XML doc comment, so they show up
+   in IntelliSense and the exported XML. Codes nothing returns any more are marked "Not
+   currently returned".
+
+
 ## [0.6.2] - 2026-9-19
 
 ### Added

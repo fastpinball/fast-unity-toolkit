@@ -4,7 +4,7 @@
         <name>FastHardwareRuntime-Windows</name>
     </assembly>
     <members>
-        <member name="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean)">
+        <member name="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean,System.Boolean)">
             <summary>
             Required initialization for the FAST unity runtime
             </summary>
@@ -14,6 +14,27 @@
             already exists (the callback is fired with SUCCESS), or
             <see cref="F:FAST_Pinball.FAST.eResult.NODE_NOT_READY"/> (Godot) if called before a FAST node is in the tree.
             </returns>
+            <param name="Callback">Called once startup finishes, with the hardware outcome.</param>
+            <param name="NodeOrder">The I/O node boards, in the order they are chained to the NET.</param>
+            <param name="ExpansionOrder">The expansion boards (Neuron included) on the EXP bus.</param>
+            <param name="ProductionBuild">True for a production build (disables keyboard switch spoofing).</param>
+            <param name="FailureOnBadHardware">
+            The attached hardware is always checked against NodeOrder / ExpansionOrder at startup, and
+            any differences are logged and available from <see cref="M:FAST_Pinball.FAST.GetHardwareMismatches"/>. When
+            true, a mismatch also FAILS startup: all FAST ports are closed, the runtime falls back to
+            stub (no hardware) mode, and the callback gets the FIRST mismatch's code -- one of the
+            <see cref="F:FAST_Pinball.FAST.eResult.FAST_CONFIG_ERROR"/> group, so <c>(Result &amp; eResult.FAST_CONFIG_ERROR) != 0</c>
+            catches them all. When false (default), startup carries on with the mismatched hardware
+            as before and the callback gets SUCCESS.
+            </param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetHardwareMismatches">
+            <summary>
+            Differences found at startup between the declared NodeOrder / ExpansionOrder and the
+            hardware actually attached -- every one found, each with its FAST_CONFIG_ERROR code, its
+            position in the declared list and a human-readable description. Empty if everything
+            matched, if startup hasn't finished, or if no hardware was found at all.
+            </summary>
         </member>
         <member name="M:FAST_Pinball.FAST.IsInitialized">
             <summary>
@@ -663,6 +684,119 @@
             <returns>
             <value>eResult.SUCCESS</value> When at the destination limit switch index
             </returns>
+        </member>
+        <member name="T:FAST_Pinball.FAST.eResult">
+            <summary>
+            Result codes passed to FAST callbacks and returned by FAST calls. SUCCESS is 0.
+            Hardware configuration errors (attached boards don't match NodeOrder / ExpansionOrder) all carry
+            the <see cref="F:FAST_Pinball.FAST.eResult.FAST_CONFIG_ERROR"/> bit (0x1000): test the group with
+            <c>(Result &amp; eResult.FAST_CONFIG_ERROR) != 0</c> and compare with == for a specific one.
+            </summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.SUCCESS">
+            <summary>The operation completed.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.INTERNAL_ERROR">
+            <summary>Unexpected internal failure. Not currently returned.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.FEATURE_UNIMPLEMENTED">
+            <summary>The call exists but isn't implemented for this hardware or platform yet.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NO_HARDWARE_FOUND">
+            <summary>No FAST controller was found. Startup then runs in stub (no-hardware) mode.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NO_EXPANSION_CORE">
+            <summary>The call needs the EXP (expansion) bus, but no expansion core is connected.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.INCORRECT_CONFIGURATION">
+            <summary>Superseded by the FAST_CONFIG_ERROR codes. Not currently returned.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.LIMIT_NOT_FOUND">
+            <summary>No limit switch was found: none are registered, or the requested index is out of range.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.AT_MAX_LIMIT">
+            <summary>The stepper is already at its maximum limit and can't wrap.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.AT_MIN_LIMIT">
+            <summary>The stepper is already at its minimum limit and can't wrap.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.SERVO_NOT_FOUND">
+            <summary>No servo exists at the requested index. Not currently returned.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.MOTOR_NOT_FOUND">
+            <summary>No stepper motor exists at the requested index.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.MOTOR_NOT_CONFIGURED">
+            <summary>The motor exists but hasn't been configured. Not currently returned.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.BREAKOUT_NOT_A_MOTOR">
+            <summary>The addressed breakout isn't a motor breakout. Not currently returned.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.POSITION_UNKNOWN_PLEASE_REHOME">
+            <summary>The stepper's position is unknown; home it again. Not currently returned.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NO_LIMIT_SWITCHES_REGISTERED">
+            <summary>The stepper has no limit switches registered, so it can't home or seek a limit.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.INITIALIZATION_STARTED">
+            <summary>Returned by Startup: async startup was kicked off. Wait for your callback.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.INSTANCE_ALREADY_EXISTS">
+            <summary>Returned by Startup: a started instance already exists (the callback fired SUCCESS).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NODE_NOT_READY">
+            <summary>Godot only, returned by Startup: it was called before a FAST node was in the scene tree.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.FAST_CONFIG_ERROR">
+            <summary>
+            Group bit (0x1000) carried by every hardware configuration error. Never returned on its own;
+            test with <c>(Result &amp; eResult.FAST_CONFIG_ERROR) != 0</c>.
+            </summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NODE_REPORT_MISSING">
+            <summary>0x1001: the NET never answered "CN:", so the I/O board chain couldn't be checked (Modern platform only).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NODE_BOARD_MISSING">
+            <summary>0x1002: a NodeOrder board isn't in the chain (the chain is shorter than declared).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NODE_BOARD_UNEXPECTED">
+            <summary>0x1003: the chain has a board that NodeOrder doesn't declare (the chain is longer than declared).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.NODE_BOARD_MISMATCH">
+            <summary>0x1004: a different board type is at a chain position (wrong board or wrong order).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.EXPANSION_BUS_MISSING">
+            <summary>0x1005: ExpansionOrder declares boards but no EXP bus was found.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.EXPANSION_BOARD_MISSING">
+            <summary>0x1006: nothing answered at a declared expansion board's EXP address.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.EXPANSION_BOARD_MISMATCH">
+            <summary>0x1007: a different product answered at a declared board's address (not checked for NEURON).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eResult.EXPANSION_BOARD_LIMIT">
+            <summary>0x1008: more boards of one type are declared than it has addresses (1 NEURON, 4 of each EXP board).</summary>
+        </member>
+        <member name="T:FAST_Pinball.FAST.HardwareMismatch">
+            <summary>One difference between the declared and attached hardware, found at startup (see FAST.GetHardwareMismatches).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.HardwareMismatch.Code">
+            <summary>One of the FAST_CONFIG_ERROR codes.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.HardwareMismatch.ListIndex">
+            <summary>Position in NodeOrder / ExpansionOrder (or in the reported node chain); -1 if none.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.HardwareMismatch.Description">
+            <summary>Human-readable description, e.g. "NodeOrder[2] FP_IO0804: found FP-I/O-1616-2 in that position".</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.HardwareMismatch.#ctor(FAST_Pinball.FAST.eResult,System.Int32,System.String)">
+            <summary>Creates a mismatch entry.</summary>
+            <param name="NewCode">One of the FAST_CONFIG_ERROR codes.</param>
+            <param name="NewListIndex">Position in the declared list; -1 if none.</param>
+            <param name="NewDescription">Human-readable description.</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.HardwareMismatch.ToString">
+            <summary>"CODE: Description".</summary>
         </member>
         <member name="M:FAST_Pinball.FAST.StandardPixelPalette.Setup(FAST_Pinball.FAST.eExpansionDestinations,System.Boolean)">
             <summary>
