@@ -2,6 +2,76 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.6.6] - 2026-10-21
+
+### Fixed
+
+-  **`FailureOnBadHardware` works again.** A leftover 0.6.2 hotfix in `StartupProcess` forced
+   it to false, so a mismatch was logged but never failed startup, whatever the game passed.
+   It is now honoured as documented under 0.6.3: `true` fails startup on any mismatch (ports
+   closed, stub mode, callback gets the first mismatch's code); `false` (the default) logs the
+   mismatches and carries on with `SUCCESS`. Games that don't pass the argument, or pass
+   `false`, behave exactly as before.
+
+### Changed
+
+-  **The cabinet I/O board is now `FP_IO0024`.** FP-CAB-0001 was the prototype name of the
+   board; production boards are FP-I/O-0024 and report that name in the NET's `CN:` node
+   report. New node class `FP_IO_0024`; `FP_CAB_0001` is now an empty subclass of it.
+-  The startup hardware check treats the two names as the same board: declaring `FP_IO0024`
+   or `FP_CAB0001` in `NodeOrder` matches a board that reports either FP-I/O-0024 or
+   FP-CAB-0001. Before this, a production cabinet board declared as `FP_CAB0001` was reported
+   as `NODE_BOARD_MISMATCH`.
+-  The Neuron sample, examples and docs now declare `FP_IO0024`.
+
+### Deprecated
+
+-  `eNodeBoards.FP_CAB0001` (and the internal `FP_CAB_0001` class) are marked `[Obsolete]`
+   (warning only). Use `eNodeBoards.FP_IO0024`. Its value (0) is unchanged, so existing code
+   and saved values keep working.
+
+
+## [0.6.5] - 2026-10-20
+
+### Changed
+
+-  Release build. No code changes since 0.6.4. This is the first package to include the
+   0.6.4 fixes; the 0.6.3 test package predates both of them.
+
+
+## [0.6.4] - 2026-10-17
+
+### Fixed
+
+-  **`SetPixelColours` no longer throws when the colours run out partway through a board.**
+   On a board with two 128-pixel ports (FP-EXP-0081), an array that ended inside the first
+   port made the second port read past the end of the array (`IndexOutOfRangeException`).
+   Nothing caught it, so the rest of the caller's frame was skipped: any lighting call made
+   after it never ran, and the exception repeated every frame. The per-port walk now maps
+   each pixel to its colour directly (`StartIndex` stays the pixel that `NewColours[0]` lands
+   on) and stops at the end of the port or of the array, whichever comes first.
+-  **`SetPixelColours` with a non-zero `StartIndex` now writes every colour.** It used to lose
+   colours: on the Neuron, `StartIndex=10` with 20 colours wrote only 10 of them, and across
+   ports or boards everything after the first port was dropped (e.g. `StartIndex=10` with 256
+   colours on two 0081s wrote 118 pixels instead of 256). A negative `StartIndex` or a null
+   array is ignored, as before.
+-  Output for arrays that start at 0 and cover whole boards is unchanged, and the call is the
+   same speed or slightly faster. The `FAST.SetPixelColours` signature is unchanged.
+
+-  **Dropped pixel updates are now resent.** `BreakoutModule_128_Pixel` sends are delta-only:
+   a pixel is recorded as sent the moment its `RC:`/`RD:` payload is queued. But the pixel write
+   queue evicts the oldest payload when it is full (`PIXEL_WRITE_QUEUE_CAPACITY`, 16), on the
+   assumption that pixel sends are full state. So under a busy light show an evicted payload's
+   pixels were lost for good, and those LEDs stayed on their old colour until they next changed.
+   It showed as some LEDs of a chase/spin never lighting, and blank steps in fast sequences.
+   `PendingWrite` now carries an optional `OnEvicted` callback (`_FastHardwareSend(...,
+   OnEvicted)`), invoked on the main thread before the buffer is recycled. The breakout module
+   uses it to forget the recorded value of every pixel in the evicted payload (palette index
+   -1 / RGB `-1`), so the next `SetPixelColour(s)` resends their **current** colour. There is no
+   extra traffic unless something was actually dropped. Other `_FastHardwareSend` callers are
+   unchanged (the parameter defaults to null).
+
+
 ## [0.6.3] - 2026-10-12
 
 ### Added

@@ -798,6 +798,12 @@
         <member name="M:FAST_Pinball.FAST.HardwareMismatch.ToString">
             <summary>"CODE: Description".</summary>
         </member>
+        <member name="F:FAST_Pinball.FAST.eNodeBoards.FP_CAB0001">
+            <summary>Prototype name of the cabinet I/O board. Use <see cref="F:FAST_Pinball.FAST.eNodeBoards.FP_IO0024"/> (production name); both match either board.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eNodeBoards.FP_IO0024">
+            <summary>Cabinet I/O board (production name, reports as FP-I/O-0024). Prototype boards reporting FP-CAB-0001 also match.</summary>
+        </member>
         <member name="M:FAST_Pinball.FAST.StandardPixelPalette.Setup(FAST_Pinball.FAST.eExpansionDestinations,System.Boolean)">
             <summary>
             Programs all ROWS*COLS entries of the standard palette into the hardware (via

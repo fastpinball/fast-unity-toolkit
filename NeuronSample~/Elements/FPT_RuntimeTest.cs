@@ -37,7 +37,7 @@ public class FPT_RuntimeTest: MonoBehaviour
                             // Ordered list of Node boards
                             new List<FAST_Pinball.FAST.eNodeBoards>()      
                                {
-                                FAST_Pinball.FAST.eNodeBoards.FP_CAB0001
+                                FAST_Pinball.FAST.eNodeBoards.FP_IO0024
                                }, 
                                
                             // Ordered list of expansion boards
