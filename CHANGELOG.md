@@ -2,6 +2,22 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.6.7] - 2026-10-23
+
+### Added
+
+-  **The watchdog timeout can be set.** `FAST.SetWatchdogTimeout(int Milliseconds)` sets the
+   timeout sent with every frame's `WD:` feed; `FAST.GetWatchdogTimeout()` reads it back, and
+   `FAST.DEFAULT_WATCHDOG_TIMEOUT_MS` (255, `WD:FF`) is the default. Any value of 1 ms or more
+   is accepted and used from the next frame. 0 or less is rejected with a warning (the current
+   value is kept), because `WD:0` turns the watchdog off. It can be set before or after
+   `Startup`, and goes back to the default when the runtime shuts down.
+-  Why: the feed is sent once per frame, so one frame longer than 255 ms (a scene load, a GC
+   pause) let the watchdog expire and drop every driver until the next frame. A game can now
+   raise the timeout around known long frames, such as its boot, and lower it again after.
+   Games that never call it behave exactly as before.
+
+
 ## [0.6.6] - 2026-10-21
 
 ### Fixed

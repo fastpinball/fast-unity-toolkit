@@ -171,6 +171,28 @@
             Resets all driver settings to default uninitialized values
             </summary>  
         </member>
+        <member name="F:FAST_Pinball.FAST.DEFAULT_WATCHDOG_TIMEOUT_MS">
+            <summary>
+            The watchdog timeout the NET is fed every frame unless the game changes it: 255 ms (WD:FF).
+            </summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.SetWatchdogTimeout(System.Int32)">
+            <summary>
+            Sets how long the NET's watchdog waits for the next feed before it disables every driver.
+            The feed is sent once per frame, so any single frame longer than this (a scene load, a GC
+            pause) drops all drivers until the next frame re-arms them. Raise it around known long
+            frames, such as a game's boot, and set it back to <see cref="F:FAST_Pinball.FAST.DEFAULT_WATCHDOG_TIMEOUT_MS"/>
+            afterwards: the longer it is, the longer coils can stay on after the game stops feeding it.
+            </summary>
+            <param name="Milliseconds">Timeout in milliseconds, 1 or more. Takes effect on the next frame's feed.</param>
+            <remarks>WD:&lt;ms in hex&gt; -- 0 (and below) is rejected and the current value kept, because WD:0
+            switches the watchdog off entirely.</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetWatchdogTimeout">
+            <summary>
+            The watchdog timeout currently sent with every frame's feed, in milliseconds.
+            </summary>
+        </member>
         <member name="M:FAST_Pinball.FAST.EnableDriver(System.Int32)">
             <summary>
             Activates a driver indefinitely. Will not deactivate until another driver command is sent to this driver index.
