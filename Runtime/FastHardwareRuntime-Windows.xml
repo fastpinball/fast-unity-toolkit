@@ -43,7 +43,11 @@
         </member>
         <member name="M:FAST_Pinball.FAST.Shutdown">
             <summary>
-            Closes and cleans up the FAST control system
+            F39: closes and cleans up the FAST control system NOW: every core's reader thread is told to stop, each
+            port's writer thread is stopped, pending output is discarded and the ports are closed, and the FAST
+            object is destroyed. The NET watchdog then expires (it's no longer fed) and every driver turns off.
+            Call it before quitting, so nothing is left for the quit to wait on. Safe to call twice. A later
+            <see cref="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean,System.Boolean)"/> builds a fresh FAST from scratch (full startup again, board resets included).
             </summary>
         </member>
         <member name="M:FAST_Pinball.FAST.Reset">
@@ -193,6 +197,20 @@
             The watchdog timeout currently sent with every frame's feed, in milliseconds.
             </summary>
         </member>
+        <member name="M:FAST_Pinball.FAST.SetExpansionPixelByteBudget(System.Int32)">
+            <summary>
+            Caps how many bytes of pixel data a second go out on the EXP bus (0 = no cap, the default).
+            The PC can produce pixel data faster than the EXP bus carries it; the excess then queues
+            in the Neuron, so pixels lag and other EXP commands (a shaker's MF:/MC:) wait behind it or
+            are lost. With a cap, a frame over budget simply isn't sent: each pixel keeps only its
+            latest colour, which goes out when the budget allows. The rate actually sent is logged
+            once a second ("EXP ... B/s").
+            </summary>
+            <param name="BytesPerSecond">0 or less = no cap.</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetExpansionPixelByteBudget">
+            <summary>The EXP pixel byte cap in bytes a second; 0 = none.</summary>
+        </member>
         <member name="M:FAST_Pinball.FAST.EnableDriver(System.Int32)">
             <summary>
             Activates a driver indefinitely. Will not deactivate until another driver command is sent to this driver index.
@@ -256,6 +274,20 @@
             <param name="StrongDriverIndex">The global zero-based index of the driver used for the flipper's hard/strong winding</param>
             <param name="HoldDriverIndex">The global zero-based index of the driver used for the hold winding</param>
             <remarks>This will not clear flipper driver flags, it is a convienience function to turn off hardware-controlled switches</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.CabIoControlToDriver(FAST_Pinball.FAST.eCabinetIoControlLines)">
+            <summary>
+            Converts a cabinet I/O board (FP-I/O-0024) driver output, by its board label, into the global
+            driver index every driver call takes, e.g. <c>FAST.PulseDriver(FAST.CabIoControlToDriver(FAST.eCabinetIoControlLines.D1), 20)</c>
+            </summary>
+            <param name="ControlLine">The driver output as labeled on the cabinet board (L0-L5, or D1 for the 48V driver)</param>
+            <returns>
+            The global zero-based driver index, worked out from where the cabinet board sits in the
+            NodeOrder passed to <see cref="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean,System.Boolean)"/> (each board before it takes up its own driver count).
+            -1 if Startup hasn't been called or NodeOrder has no cabinet board -- every driver call
+            ignores a negative index, so the result can be passed on without checking.
+            </returns>
+            <remarks>Uses the DECLARED NodeOrder; the startup hardware check is what confirms it matches the real chain.</remarks>
         </member>
         <!-- Badly formed XML comment ignored for member "M:FAST_Pinball.FAST.RegisterSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)" -->
         <!-- Badly formed XML comment ignored for member "M:FAST_Pinball.FAST.RegisterSystemSwitchCallback(System.Int32,FAST_Pinball.FAST.SwitchEventCallback)" -->
@@ -533,6 +565,46 @@
             <param name="ServoIndex">The global servo index</param>
             <param name="DestRotationPercent">The desired servo rotation, between 0.0f to 1.0f</param>
             <param name="Dest">The local expansion board base to send the pixel command to</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Shaker_Pulse(System.Int32,System.Single,System.Single)">
+            <summary>
+            Runs a shaker motor (FP-EXP-1313 shaker board) at one power level for a set time; the board
+            turns it off itself when the time runs out. Replaces any pulse or curve still running.
+            </summary>
+            <param name="ShakerIndex">The global shaker index: one per FP_EXP1313 board, in ExpansionOrder order (0 = first 1313)</param>
+            <param name="PowerPercent">Shaker power, 0.0f to 1.0f (clamped). 0 does nothing (and ends a running curve)</param>
+            <param name="OnTimeSeconds">How long to run in seconds, up to 65.535 (clamped). 0 does nothing (and ends a running curve)</param>
+            <remarks>MF@30x:00,time_ms,power -- same wire format MPF uses for the 1313</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Shaker_PlayCurve(System.Int32,UnityEngine.AnimationCurve,System.Single)">
+            <summary>
+            Runs a shaker motor with its power following a curve for a set time, then stops it.
+            Replaces any pulse or curve still running.
+            </summary>
+            <param name="ShakerIndex">The global shaker index: one per FP_EXP1313 board, in ExpansionOrder order (0 = first 1313)</param>
+            <param name="PowerCurve">Power over time: X runs 0.0 to 1.0 across the whole duration, Y is power 0.0 to 1.0 (clamped). Read live each frame, so edits to it take effect while it plays</param>
+            <param name="DurationSeconds">How long the curve takes to play, in seconds. 0 or a null curve does nothing (and ends a running curve)</param>
+            <remarks>
+            Played in software, once per frame: MF@30x:00,time_left_ms,power is re-sent when the power
+            changes (at most 50 times a second), MC@30x:00 when it reaches 0 and at the end. Each MF: runs
+            for the time left on the curve, so the board still stops on time if the game stalls.
+            </remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Shaker_Stop(System.Int32)">
+            <summary>
+            Stops a shaker motor straight away (removes its power), including a curve that's playing
+            </summary>
+            <param name="ShakerIndex">The global shaker index: one per FP_EXP1313 board, in ExpansionOrder order (0 = first 1313)</param>
+            <remarks>MC@30x:00</remarks>
+        </member>
+        <member name="M:FAST_Pinball.FAST.Shaker_IsActive(System.Int32)">
+            <summary>
+            Whether a shaker is busy: a pulse's on-time hasn't run out yet, or a curve is still playing
+            (including any zero-power stretch of it). Use it to queue shakes so they don't cut each other off.
+            </summary>
+            <param name="ShakerIndex">The global shaker index: one per FP_EXP1313 board, in ExpansionOrder order (0 = first 1313)</param>
+            <returns>True while busy. False once done or stopped, for an unknown index, or before Startup has found an EXP bus</returns>
+            <remarks>A software estimate from the times the game asked for -- the board never reports whether the motor is actually running</remarks>
         </member>
         <member name="M:FAST_Pinball.FAST.Stepper_Initialize(System.Int32,System.Int32,System.Single,System.Boolean,FAST_Pinball.FAST.eExpansionDestinations)">
             <summary>
@@ -826,6 +898,98 @@
         <member name="F:FAST_Pinball.FAST.eNodeBoards.FP_IO0024">
             <summary>Cabinet I/O board (production name, reports as FP-I/O-0024). Prototype boards reporting FP-CAB-0001 also match.</summary>
         </member>
+        <member name="T:FAST_Pinball.FAST.eCabinetIoControlLines">
+            <summary>
+            The cabinet I/O board's (FP-I/O-0024) driver outputs, by the names printed on the board.
+            Each value is the board's own (local) driver number -- turn it into the global driver index
+            every driver call takes with <see cref="M:FAST_Pinball.FAST.CabIoControlToDriver(FAST_Pinball.FAST.eCabinetIoControlLines)"/>.
+            </summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.L0">
+            <summary>Low-current driver L0 (coin door header). FAST-recommended use: always-on ground for the coin door interlock switch.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.L1">
+            <summary>Low-current driver L1 (coin door header). FAST-recommended use: always-on ground for the coin mechs.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.L2">
+            <summary>Low-current driver L2 (cabinet left header). FAST-recommended use: start button lamp.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.L3">
+            <summary>Low-current driver L3 (cabinet left header). FAST-recommended use: always-on ground for the tilt bob.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.L4">
+            <summary>Low-current driver L4 (cabinet right header). FAST-recommended use: launch/lockdown button lamp.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.L5">
+            <summary>Low-current driver L5 (cabinet right header). Reserved by FAST for a bill acceptor.</summary>
+        </member>
+        <member name="F:FAST_Pinball.FAST.eCabinetIoControlLines.D1">
+            <summary>The board's only high-current (48V) driver, labeled D1 -- software driver 7 on the board. Typically the knocker.</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.BreakoutModule_Shaker.TakeQueuedCommands">
+            Hands over (and clears) every MF:/MC: queued since the last call; "" if none.
+        </member>
+        <member name="F:FAST_Pinball.FAST.DEFAULT_FIRMWARE_SUBFOLDER">
+            <summary>Subfolder of StreamingAssets games are expected to ship FAST firmware .txt files in.</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetHardwareVersions(System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards})">
+            <summary>
+            F34: every board attached, as (product, firmware) pairs: the NET processor ("FP-CPU-2000"), each I/O
+            node from "CN:" ("FP-I/O-3208-3"), and each EXP board that answers "EA:&lt;addr&gt;" + "ID:"
+            ("FP-EXP-0081"). Call BEFORE <see cref="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean,System.Boolean)"/>: it opens the FAST ports, reads, and closes them
+            again. Returns null if FAST has been started (or another read/update is running), and an empty list
+            if no FAST controller is attached.
+            </summary>
+            <param name="ExpansionOrder">The EXP boards to look for (as passed to Startup). Null = every known address (slower: ~0.3 s per empty one).</param>
+        </member>
+        <member name="M:FAST_Pinball.FAST.CompareHardwareVersions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Version}},System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Version}},System.Collections.Generic.List{System.String}@,System.Collections.Generic.List{System.String}@)">
+            <summary>
+            F34: checks Found (from <see cref="M:FAST_Pinball.FAST.GetHardwareVersions(System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards})"/>) against Required. Each Required entry must
+            match at least one found board (Missing gets it if not); every found board it matches must be at least
+            its version (TooOld gets "FP-EXP-1313 0.48 &lt; 0.67" if not). A Required name matches any product that
+            STARTS with it ("FP-I/O-3208" matches "FP-I/O-3208-3"). Found boards not in Required are ignored.
+            </summary>
+            <returns>True if nothing is missing or too old.</returns>
+        </member>
+        <member name="M:FAST_Pinball.FAST.HasFirmwareFile(System.String,System.String,System.Version)">
+            <summary>
+            F34: True if FirmwareFolder holds a file newer than Version for this board product (the same files
+            <see cref="M:FAST_Pinball.FAST.UpdateHardwareFirmware(System.String,System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Version}},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Int32,System.Collections.Generic.List{System.String})"/> would use). I/O products ("FP-I/O-...") are updated from the
+            NET file and can't be checked this way: returns True if a Neuron NET file is present.
+            </summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.UpdateHardwareFirmware(System.String,System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Version}},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Int32,System.Collections.Generic.List{System.String})">
+            <summary>
+            F34: updates every attached board that is older than Required (same matching as
+            <see cref="M:FAST_Pinball.FAST.CompareHardwareVersions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Version}},System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Version}},System.Collections.Generic.List{System.String}@,System.Collections.Generic.List{System.String}@)"/>) with the newest file for it in FirmwareFolder: EXP boards one
+            at a time ("EA:" + file), the NET (Neuron only), then the I/O boards ("BN:AA55"). Then every EXP board
+            gets "BR@" (reset) and the ports are closed -- the game should then restart. Call BEFORE
+            <see cref="M:FAST_Pinball.FAST.Startup(FAST_Pinball.FAST.BasicResultCallback,System.Collections.Generic.List{FAST_Pinball.FAST.eNodeBoards},System.Collections.Generic.List{FAST_Pinball.FAST.eExpansionBoards},System.Boolean,System.Boolean)"/>; refuses (returns false) if FAST has been started. Progress:
+            <see cref="M:FAST_Pinball.FAST.GetFirmwareUpdateProgress"/> (whole update), <see cref="M:FAST_Pinball.FAST.GetFirmwareUpdateBoardProgress"/>
+            (current board), <see cref="M:FAST_Pinball.FAST.GetFirmwareUpdateStatus"/>; results: <see cref="M:FAST_Pinball.FAST.GetFirmwareUpdateResults"/>.
+            </summary>
+            <param name="ReinstallProducts">
+            Optional (F35, for testing an update screen): boards whose product starts with one of these get the
+            newest file for them even when they already meet Required -- the same version is re-installed. Still
+            never a downgrade (a file older than the board is never sent).
+            </param>
+            <returns>True if every board that needed it now meets Required (and every re-install worked).</returns>
+        </member>
+        <member name="M:FAST_Pinball.FAST.IsFirmwareUpdating">
+            <summary>True while UpdateHardwareFirmware is running.</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetFirmwareUpdateProgress">
+            <summary>0.0 - 1.0 through the whole update (0 if none).</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetFirmwareUpdateBoardProgress">
+            <summary>0.0 - 1.0 through the board being updated now (0 if none).</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetFirmwareUpdateStatus">
+            <summary>One line about the step in progress, e.g. "FP-EXP-1313 at 30: 0.48 -> 0.67". Empty if none.</summary>
+        </member>
+        <member name="M:FAST_Pinball.FAST.GetFirmwareUpdateResults">
+            <summary>One line per board the last update tried: "updated" or "FAILED" plus why.</summary>
+        </member>
         <member name="M:FAST_Pinball.FAST.StandardPixelPalette.Setup(FAST_Pinball.FAST.eExpansionDestinations,System.Boolean)">
             <summary>
             Programs all ROWS*COLS entries of the standard palette into the hardware (via
@@ -856,6 +1020,39 @@
             Safe to call at any time (just changes an int the next enqueue reads), including
             before any real traffic has flowed, which is the intended timing.
             </remarks>
+        </member>
+        <member name="T:FAST_Pinball.FastNativeSerialPort">
+             <summary>F37: the serial port FAST talks through, written straight against the OS.</summary>
+             <remarks>
+               Replaces System.IO.Ports.SerialPort. In Unity's IL2CPP class libraries (unityaot-*) SerialPort.Open() is a
+             NotSupportedException stub, so an IL2CPP player found no FAST hardware. This class is used under Mono, IL2CPP and
+             the editor alike, so development runs the same code that ships. All C#: DllImport into libraries every machine
+             already has (libc.so.6 / kernel32.dll / libSystem.dylib). No native plugin.
+            
+               Only what FAST uses, with SerialPort's behaviour:
+               - ReadTo keeps whatever follows the delimiter for the next read. On a timeout it KEEPS the partial line and
+                 throws TimeoutException (FAST's catch blocks rely on both).
+               - Write blocks the calling (writer) thread for up to WriteTimeout, then throws TimeoutException.
+               - Text is ASCII (SerialPort's default encoding). Always 8 data bits, no parity, 1 stop bit, no flow control.
+               - One thread may read while another writes (FAST's core reader thread + its PortWriter thread).
+            
+               macOS (OSX_DLL) is compiled but has never been run on hardware (decided 2026-11-17: "Native, untested").
+             </remarks>
+        </member>
+        <member name="F:FAST_Pinball.FastNativeSerialPort.ReadTimeout">
+            <summary>ms; negative = wait forever (SerialPort.InfiniteTimeout).</summary>
+        </member>
+        <member name="F:FAST_Pinball.FastNativeSerialPort.WriteTimeout">
+            <summary>ms; negative = wait forever.</summary>
+        </member>
+        <member name="M:FAST_Pinball.FastNativeSerialPort.ReadTo(System.String)">
+            <summary>Everything up to (not including) Value; the bytes after it stay for the next read.</summary>
+        </member>
+        <member name="M:FAST_Pinball.FastNativeSerialPort.ReadExisting">
+            <summary>Whatever has arrived so far, without waiting.</summary>
+        </member>
+        <member name="P:FAST_Pinball.FastNativeSerialPort.BytesToWrite">
+            <summary>Bytes still in the OS driver's output queue.</summary>
         </member>
     </members>
 </doc>

@@ -2,6 +2,86 @@
 All notable changes to this package will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## [0.7.0] - 2026-11-17
+
+Everything since 0.6.7, in one release (replaces the 0.6.8 - 0.6.23 test builds).
+
+### Added
+
+-  **FP-EXP-1313 shaker board.** New `eExpansionBoards.FP_EXP1313` (= 5; appended, so existing values don't change).
+   Up to 4 boards at EXP addresses 30-33, checked at startup like the other expansion boards. `ShakerIndex` counts the
+   1313 boards in `ExpansionOrder` order, starting at 0.
+   -  `FAST.Shaker_Pulse(ShakerIndex, PowerPercent, OnTimeSeconds)`: one power (0.0-1.0) for a time; the board stops it.
+   -  `FAST.Shaker_PlayCurve(ShakerIndex, PowerCurve, DurationSeconds)`: the power follows a curve (`AnimationCurve` /
+      Godot `Curve`, X 0-1 across the duration), played in software, then stops.
+   -  `FAST.Shaker_Stop(ShakerIndex)`. Any new pulse or curve replaces what's running.
+   -  `FAST.Shaker_IsActive(ShakerIndex)`: true while a pulse's time or a curve hasn't run out (worked out from the
+      requested times; the board doesn't report it).
+   -  Commands are sent at once, each in its own write; if several are queued for one board in a frame, only the newest
+      goes out (a quick start + stop sends just the stop).
+   -  GDScript: `GdShakerPulse` / `GdShakerPlayCurve` / `GdShakerStop` / `GdShakerIsActive`.
+   -  Requires 1313 firmware 0.67 or later when pixels use palette mode (0.48's motor stops under `RC@` traffic).
+-  **Cabinet I/O board drivers by name.** `FAST.CabIoControlToDriver(eCabinetIoControlLines)` converts one of the
+   FP-I/O-0024's labeled outputs (`L0`-`L5` low-current, `D1` the 48V driver) into the global driver index the driver
+   calls take, based on the cabinet board's place in `NodeOrder` (-1, which every driver call ignores, if there is none).
+   GDScript: `GdCabIoControlToDriver(int)`.
+-  **Board versions and firmware updates, run while FAST is closed.** Each refuses to run once `FAST.Startup` has been
+   called; they open and close the serial ports themselves and run off the main thread.
+   -  `Task<List<KeyValuePair<string, System.Version>>> FAST.GetHardwareVersions(List<eExpansionBoards> ExpansionOrder = null)`:
+      (product, version) for the NET, each I/O node and each EXP board. Empty if no FAST hardware; null if refused.
+   -  `bool FAST.CompareHardwareVersions(Found, Required, out Missing, out TooOld)`: a required name matches products that
+      start with it; every required board must be present; unlisted boards are ignored.
+   -  `bool FAST.HasFirmwareFile(Folder, Product, AtLeast)`.
+   -  `Task<bool> FAST.UpdateHardwareFirmware(Folder, Required, ExpansionOrder = null, LineDelayMs = 200, List<string> ReinstallProducts = null)`:
+      brings every too-old board up to the newest file for it (EXP boards one at a time; the NET, Neuron only, then the
+      I/O boards via `BN:AA55`), then resets the EXP boards and closes the ports. Never downgrades and never sends a file
+      for another product. A plan that can't be completed sends nothing; the first board that fails its check (no
+      bootloader, or the wrong version read back after its restart) stops the run, and the results end with
+      `STOPPED: ...`. `ReinstallProducts` re-installs the current version on matching boards.
+   -  Progress: `GetFirmwareUpdateProgress()`, `GetFirmwareUpdateBoardProgress()`, `GetFirmwareUpdateStatus()`,
+      `GetFirmwareUpdateResults()`, `IsFirmwareUpdating()`. `DEFAULT_FIRMWARE_SUBFOLDER` = "FastFirmware" (StreamingAssets).
+   -  File names: the product comes from the file header, the version from its name (`firmware-0.67.42565`, `_v_0_48`,
+      `_1_05_firmware`).
+-  **EXP pixel byte budget.** `FAST.SetExpansionPixelByteBudget(int BytesPerSecond)` / `GetExpansionPixelByteBudget()`
+   cap pixel data on the EXP bus (0 = no cap, the default). A frame over budget is held; each pixel keeps only its latest
+   colour. A once-a-second log line reports `EXP <n> B/s, pixel frames sent <a> skipped <b>, budget <c>`.
+-  **`FAST.Shutdown()` works.** It was an empty stub. It now stops every core's reader thread, stops the port writer
+   threads, closes the serial ports and destroys the FAST object; with the NET watchdog no longer fed, every driver turns
+   off. Call it before quitting. A later `Startup()` starts FAST fresh (full startup, board resets included).
+   Note: a game that called `Shutdown()` on every scene switch (harmless while it did nothing) now restarts FAST each time.
+-  Low-level `FastSerialCommunicator` helpers: `_ReadExisting(int)`, `_GetBytesQueued(int)`, `_IsPortWriteIdle(int)`.
+
+### Changed
+
+-  **Serial ports no longer use `System.IO.Ports.SerialPort`.** The new `FastNativeSerialPort` talks to the OS directly
+   (libc on Linux, kernel32 with overlapped I/O on Windows, libSystem on macOS), in C# with no native plugin, under Mono,
+   IL2CPP and the editor alike. It behaves like `SerialPort` for everything FAST uses (921600 8N1, DTR/RTS on, 250 ms
+   timeouts, `ReadTo` keeps a timed-out partial line).
+-  **Startup identifies each EXP board individually and resets it.** Every declared board is asked with `EA:<addr>` +
+   `ID:` and keeps its own reply, then gets `BR@<addr>:` (LEDs off, servos home), so a boot starts from the same state
+   with or without a power cycle. Log: `EXP boards at startup (EA: + ID:, then a BR@ reset): <replies>`.
+-  Each core's serial reader thread is a background thread.
+-  `FastSerialCommunicator._Shutdown()` leaves an empty port list (was null), so ports can be opened again.
+
+### Fixed
+
+-  **IL2CPP builds found no FAST hardware.** Under IL2CPP, `SerialPort.Open()` is a stub that throws
+   `NotSupportedException`, so every port failed to open. Fixed by the native serial port above.
+-  **Quitting could stall for many seconds or hang.** The reader threads were foreground threads that nothing stopped,
+   and closing a port with unsent output waited for it to drain (up to 30 s on Linux). Fixed by `Shutdown()`, background
+   reader threads, and dropping unsent output on close.
+-  **Pixel boards could take another board's firmware version and go dark.** A bare `ID:` only reaches every board while
+   no `EA:` has been sent since power-on; with one left over, a single board answered and the others took its version
+   (wrong colour-table command, dark strips). It also made the startup board check report working FP-EXP-0081s as
+   missing. Fixed by the per-board `EA:` + `ID:`.
+-  **The Neuron and the FP-EXP-1313 shared a product ID**, so the Neuron could take the 1313's firmware version. The
+   Neuron is now `FP-EXP-2000`.
+-  **`SetPixelColours` could throw `IndexOutOfRangeException`** when a pixel changed several times before the next send.
+   A pixel that changes again is now updated in place, so a module's change list never exceeds 128 entries.
+-  **A quick shake-and-stop could leave the shaker running**: the start and the stop went out together. Only the newest
+   command per board is sent.
+
+
 ## [0.6.7] - 2026-10-23
 
 ### Added
